@@ -1,6 +1,6 @@
 extends Control
 
-const META_VALUE_SLIDERS := "value_sliders"
+const META_VALUE_SLIDERS : String = "value_sliders"
 
 @export var brushes : Array[BrushTool]
 
@@ -16,7 +16,7 @@ const META_VALUE_SLIDERS := "value_sliders"
 @onready var tool_icon_container : GridContainer = $%ToolsContainer
 @onready var parameters_container : MarginContainer = $%ParametersContainer
 
-@onready var number_slider_instancier := preload("res://scenes/ui/NumberSlider.tscn")
+@onready var number_slider_instancier : PackedScene = preload("res://scenes/ui/NumberSlider.tscn")
 
 @onready var selected_tool : String = ""
 
@@ -39,26 +39,26 @@ func _ready() -> void:
 	$%RenderArea.resized.connect(_on_canvas_resize)
 
 	# Register all declared brushes
-	var definitions : Array[DrawingApp.BrushDefinition] = []
-	for b in brushes:
+	var definitions : Array[BrushDefinition] = []
+	for b : BrushTool in brushes:
 		# Inject brush definition
 		var new_button : TextureButton = TextureButton.new()
-		new_button.name = b.name
+		new_button.name = b.definition.identifier
 		new_button.texture_normal = b.icon
 
 		tool_icon_container.add_child(new_button)
 
-		var parameters_panel := Panel.new()
-		parameters_panel.name = b.name
-		var parameters_grid := GridContainer.new()
+		var parameters_panel : Panel = Panel.new()
+		parameters_panel.name = b.definition.identifier
+		var parameters_grid : GridContainer = GridContainer.new()
 		parameters_panel.add_child(parameters_grid)
 		parameters_grid.set_anchors_preset(Control.PRESET_FULL_RECT)
 		parameters_grid.columns = 2
 
 		var values : Array[NumberSlider] = []
-		for i in range(b.parameters.size()):
-			var p := b.parameters[i]
-			var parameter_name := Label.new()
+		for i : int in range(b.definition.parameters.size()):
+			var p : BrushParameter = b.definition.parameters[i]
+			var parameter_name : Label = Label.new()
 			parameter_name.name = p.name
 			parameter_name.text = p.name
 			parameters_grid.add_child(parameter_name)
@@ -76,19 +76,7 @@ func _ready() -> void:
 		parameters_panel.set_meta(META_VALUE_SLIDERS, values)
 
 		# Create the brush definition.
-		var brush_definition : DrawingApp.BrushDefinition = DrawingApp.BrushDefinition.new()
-		brush_definition.identifier = b.name
-		brush_definition.buffers = {}
-		for buf in b.buffers:
-			var buffer_name := BrushTool.BUFFER_NAMES[buf]
-			brush_definition.buffers[buffer_name] = b.buffers[buf]
-		brush_definition.stages = []
-		for stage in b.stages:
-			var s_dict : Dictionary = {}
-			s_dict["source"] = stage.shader
-			s_dict["uniforms"] = stage.buffers.map(func(x) : return BrushTool.BUFFER_NAMES[x])
-			brush_definition.stages.append(s_dict)
-		definitions.append(brush_definition)
+		definitions.append(b.definition)
 
 		new_button.pressed.connect(_display_parameter_panel.bind(parameters_panel))
 
@@ -97,8 +85,8 @@ func _ready() -> void:
 
 	render_area.gui_input.connect(_on_render_area_input)
 
-func _add_brushes(bs : Array[DrawingApp.BrushDefinition]) -> void:
-	for b in bs:
+func _add_brushes(bs : Array[BrushDefinition]) -> void:
+	for b : BrushDefinition in bs:
 		drawing_app.add_brush(b)
 	drawing_app.diagnosis()
 
@@ -107,13 +95,13 @@ func _set_brush_parameter_value(value : float, id : int) -> void:
 
 func _display_parameter_panel(panel : Panel) -> void:
 	selected_tool = panel.name
-	for c in parameters_container.get_children():
+	for c : Node in parameters_container.get_children():
 		c.visible = false
 	panel.visible = true
 	_change_brush_color(foreground_color_selector.color)
 	var sliders : Array = panel.get_meta(META_VALUE_SLIDERS, [])
-	for i in range(sliders.size()):
-		var slider := (sliders[i] as NumberSlider)
+	for i : int in range(sliders.size()):
+		var slider : NumberSlider = (sliders[i] as NumberSlider)
 		drawing_app.set_brush_parameter(i + 4, slider.value)
 
 func _change_brush_color(color : Color) -> void:
@@ -132,7 +120,7 @@ func _process(delta : float) -> void:
 
 func _on_render_area_input(event : InputEvent) -> void:
 	if event is InputEventMouseButton:
-		var mev := event as InputEventMouseButton
+		var mev : InputEventMouseButton = event as InputEventMouseButton
 		if mev.button_index == MOUSE_BUTTON_LEFT:
 			if (not cursor_drag) and mev.pressed and (not selected_tool.is_empty()):
 				cursor_drag = true
@@ -142,6 +130,6 @@ func _on_render_area_input(event : InputEvent) -> void:
 				drawing_app.commit()
 				drawing_app.render()
 	elif event is InputEventMouseMotion:
-		var mev := event as InputEventMouseMotion
+		var mev : InputEventMouseMotion = event as InputEventMouseMotion
 		if cursor_drag:
 			drawing_app.push_cursor_info(mev.position, mev.velocity, mev.tilt, pressure_adjustment.sample_baked(mev.pressure), current_time)

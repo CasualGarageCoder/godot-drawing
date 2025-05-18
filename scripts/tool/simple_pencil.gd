@@ -3,14 +3,10 @@ extends Node
 
 signal resized()
 
-const ROLLBACK_BUFFER_ID := "ROLLBACK"
-const COMMIT_BUFFER_ID := "COMMIT"
-const CANVAS_INFO_BUFFER_ID := "CANVAS_INFO"
-const CURSOR_INFO_BUFFER_ID := "CURSOR_INFO"
-const BRUSH_INFO_BUFFER_ID := "BRUSH_INFO"
-
-const RESERVED_BUFFER_NAMES : Array[String] = [
-	ROLLBACK_BUFFER_ID, COMMIT_BUFFER_ID, CANVAS_INFO_BUFFER_ID, CURSOR_INFO_BUFFER_ID, BRUSH_INFO_BUFFER_ID
+const RESERVED_BUFFER_NAMES : Array[BrushDefinition.BrushBufferName] = [
+	BrushDefinition.BrushBufferName.ROLLBACK, BrushDefinition.BrushBufferName.COMMIT,
+	BrushDefinition.BrushBufferName.CANVAS_INFO, BrushDefinition.BrushBufferName.CURSOR_INFO,
+	BrushDefinition.BrushBufferName.BRUSH_INFO
 ]
 
 @export var canvas_size : Vector2i :
@@ -31,7 +27,7 @@ class ShaderBuffer:
 	var size : int
 	var cache : PackedByteArray
 
-	func _init(r : RID, t : RenderingDevice.UniformType, s : int, c : PackedByteArray = PackedByteArray()):
+	func _init(r : RID, t : RenderingDevice.UniformType, s : int, c : PackedByteArray = PackedByteArray()) -> void:
 		rid = r
 		type = t
 		size = s
@@ -44,12 +40,12 @@ class ShaderBuffer:
 		cache.encode_s32(4, value.y)
 
 	func set_parameter(idx : int, value : float) -> void:
-		var pos := idx * 4
+		var pos : int = idx * 4
 		assert(pos < cache.size())
 		cache.encode_float(pos, value)
 
 	func copy_parameter(src : int, dst : int) -> void:
-		var s := src * 4; var d := dst * 4
+		var s : int = src * 4; var d : int = dst * 4
 		assert(s < cache.size() and d < cache.size())
 		cache[d] = cache[s]
 		cache[d + 1] = cache[s + 1]
@@ -58,7 +54,7 @@ class ShaderBuffer:
 
 	func set_parameter_v(values : PackedFloat32Array) -> void:
 		assert(values.size() <= cache.size() * 4)
-		for i in range(values.size()):
+		for i : int in range(values.size()):
 			cache.encode_float(i * 4, values[i])
 
 	func build_empty_cache() -> void:
@@ -75,29 +71,16 @@ class ShaderBuffer:
 
 	func print_content(count : int) -> void:
 		if not cache.is_empty():
-			for i in range(count):
+			for i : int in range(count):
 				print("#%d : %f" % [i , cache.decode_float(i * 4)])
 
-class BrushDefinition:
-	## Unique identifier
-	var identifier : String
-	## Global buffers identifiers. Can match with the buffer of another brush iif the number of parameters per cell is the same.
-	var buffers : Dictionary[String, int]
-	## Pipeline of shaders.  Each entry is formated as below:
-	## {
-	##     "source" : "/path/to/glsl",
-	##     "uniforms" : [ "guid_1", "guid_2", ... "guid_n" ]
-	## }
-	## GUID refers to buffer defined in 'buffers' or to built-in buffer : ROLLBACK, COMMIT, PARAMETERS, CANVAS, CURSOR
-	var stages : Array[Dictionary]
-
 class BrushShader:
-	var ios : Array[String]
+	var ios : Array[BrushDefinition.BrushBufferName]
 	var shader : RID
 	var uniform_set : RID
 	var pipeline : RID
 
-	func _init(sh : RID, uniforms : Array[String]):
+	func _init(sh : RID, uniforms : Array[BrushDefinition.BrushBufferName]) -> void:
 		ios = uniforms
 		shader = sh
 		uniform_set = RID()
@@ -105,7 +88,7 @@ class BrushShader:
 
 class Brush:
 	var ready : bool = false
-	var buffers_to_clean : Array[String] = []
+	var buffers_to_clean : Array[BrushDefinition.BrushBufferName] = []
 	var stages : Array[BrushShader] = []
 
 @onready var rendering_device : RenderingDevice
@@ -127,15 +110,15 @@ class Brush:
 @onready var render_uniform_set : RID
 @onready var render_pipeline : RID
 
-@onready var buffer_definitions : Dictionary[String, int] = {}
+@onready var buffer_definitions : Dictionary[BrushDefinition.BrushBufferName, int] = {}
 
-@onready var buffers : Dictionary[String, ShaderBuffer] = {}
+@onready var buffers : Dictionary[BrushDefinition.BrushBufferName, ShaderBuffer] = {}
 
 @onready var brushes : Dictionary[String, Brush] = {}
 
 @onready var active_brush : Brush = null
 
-@onready var clearing_buffer := PackedByteArray()
+@onready var clearing_buffer : PackedByteArray = PackedByteArray()
 
 func start_draw(brush_name : String, pos : Vector2, velocity : Vector2, tilt : Vector2, pressure : float, t : float) -> void:
 	assert(brushes.has(brush_name) and brushes[brush_name].ready)
@@ -143,7 +126,7 @@ func start_draw(brush_name : String, pos : Vector2, velocity : Vector2, tilt : V
 	push_cursor_info(pos, velocity, tilt, pressure, t)
 	push_cursor_info(pos, velocity, tilt, pressure, t)
 	# Clean canvas
-	for b in active_brush.buffers_to_clean:
+	for b : BrushDefinition.BrushBufferName in active_brush.buffers_to_clean:
 		buffers[b].clear(rendering_device, clearing_buffer)
 
 func push_cursor_info(pos : Vector2, velocity : Vector2, tilt : Vector2, pressure : float, t : float) -> void:
@@ -172,7 +155,7 @@ func add_brush(def : BrushDefinition) -> void:
 	var brush : Brush = Brush.new()
 	# Check buffers definition
 	brush.ready = true
-	for b in def.buffers:
+	for b : BrushDefinition.BrushBufferName in def.buffers:
 		assert(def.buffers[b] > 0)
 		if not buffer_definitions.has(b):
 			buffer_definitions[b] = def.buffers[b]
@@ -182,21 +165,19 @@ func add_brush(def : BrushDefinition) -> void:
 				buffers[b] = _create_canvas_buffer(rendering_device, def.buffers[b])
 		else:
 			assert(def.buffers[b] == buffer_definitions[b])
-	for s in def.stages:
-		assert(s.has("source"))
-		var stage_shader : RID = _init_shader(s["source"])
-		var ios : Array[String] = []
-		assert(s.has("uniforms"))
+	for s : BrushStage in def.stages:
+		var stage_shader : RID = _init_shader(s.shader)
+		var ios : Array[BrushDefinition.BrushBufferName] = []
 		var got_all : bool = brush.ready
-		for u in s["uniforms"]:
+		for u : BrushDefinition.BrushBufferName in s.buffers:
 			got_all = got_all and (u in buffers)
 			ios.append(u)
 		brush.ready = got_all
-		var brush_shader := BrushShader.new(stage_shader, ios)
+		var brush_shader : BrushShader = BrushShader.new(stage_shader, ios)
 		if brush.ready:
 			_link_brush_shader(brush_shader)
 		brush.stages.append(brush_shader)
-		for i in ios:
+		for i : BrushDefinition.BrushBufferName in ios:
 			if not(i in brush.buffers_to_clean or i in RESERVED_BUFFER_NAMES):
 				brush.buffers_to_clean.append(i)
 	brushes[def.identifier] = brush
@@ -204,12 +185,12 @@ func add_brush(def : BrushDefinition) -> void:
 func _set_clearing_buffer_size(sz : int) -> void:
 	if sz > (clearing_buffer.size() * 4):
 		clearing_buffer.resize(sz * 4)
-		for i in range(sz):
+		for i : int in range(sz):
 			clearing_buffer.encode_float(i * 4, NAN) # Really NOT optimal. But better than creating a PackedByteArray EACH TIME
 
 func _link_brush_shader(brush_shader : BrushShader) -> void:
 	var uniforms : Array[RDUniform] = []
-	for i in range(brush_shader.ios.size()):
+	for i : int in range(brush_shader.ios.size()):
 		_register_uniform_in_set(buffers[brush_shader.ios[i]], i, uniforms)
 	brush_shader.uniform_set = rendering_device.uniform_set_create(uniforms, brush_shader.shader, 0)
 	brush_shader.pipeline = rendering_device.compute_pipeline_create(brush_shader.shader) # FIXME Can be done ONCE
@@ -228,10 +209,10 @@ func _resize_canvas() -> void:
 		_initialize_render_stage()
 		buffers.clear()
 		_restore_built_in_buffers()
-		for b in buffer_definitions:
+		for b : BrushDefinition.BrushBufferName in buffer_definitions:
 			buffers[b] = _create_canvas_buffer(rendering_device, buffer_definitions[b])
-		for b in brushes:
-			for s in brushes[b].stages:
+		for b : String in brushes:
+			for s : BrushShader in brushes[b].stages:
 				_link_brush_shader(s)
 			brushes[b].ready = true
 		resized.emit()
@@ -245,7 +226,7 @@ func _init_render_shader() -> void:
 	render_shader = _init_shader(rendering_shader_path)
 
 func _init_shader(path : String) -> RID:
-	var shader_file := load(path)
+	var shader_file : RDShaderFile = load(path)
 	var shader_spirv : RDShaderSPIRV = shader_file.get_spirv()
 	if shader_spirv.compile_error_compute != "":
 		push_error(shader_spirv.compile_error_compute)
@@ -263,11 +244,11 @@ func _init_general_info() -> void:
 	brush_parameters_buffer.build_empty_cache()
 
 func _restore_built_in_buffers() -> void:
-	buffers[CURSOR_INFO_BUFFER_ID] = cursor_info_buffer
-	buffers[CANVAS_INFO_BUFFER_ID] = canvas_info_buffer
-	buffers[BRUSH_INFO_BUFFER_ID] = brush_parameters_buffer
-	buffers[ROLLBACK_BUFFER_ID] = rollback_shader_buffer
-	buffers[COMMIT_BUFFER_ID] = commit_shader_buffer
+	buffers[BrushDefinition.BrushBufferName.CURSOR_INFO] = cursor_info_buffer
+	buffers[BrushDefinition.BrushBufferName.CANVAS_INFO] = canvas_info_buffer
+	buffers[BrushDefinition.BrushBufferName.BRUSH_INFO] = brush_parameters_buffer
+	buffers[BrushDefinition.BrushBufferName.ROLLBACK] = rollback_shader_buffer
+	buffers[BrushDefinition.BrushBufferName.COMMIT] = commit_shader_buffer
 
 func _reset_canvas_info() -> void:
 	canvas_info_buffer.set_parameter_vi(canvas_size)
@@ -314,27 +295,27 @@ func rollback() -> void:
 	active_brush = null
 
 func set_brush_parameter(idx : int, value : float) -> void:
-	if BRUSH_INFO_BUFFER_ID in buffers and buffers[BRUSH_INFO_BUFFER_ID].rid.is_valid():
-		buffers[BRUSH_INFO_BUFFER_ID].set_parameter(idx, value)
-		_update_buffer(rendering_device, buffers[BRUSH_INFO_BUFFER_ID]) # FIXME Perhaps not each time ...
+	if BrushDefinition.BrushBufferName.BRUSH_INFO in buffers and buffers[BrushDefinition.BrushBufferName.BRUSH_INFO].rid.is_valid():
+		buffers[BrushDefinition.BrushBufferName.BRUSH_INFO].set_parameter(idx, value)
+		_update_buffer(rendering_device, buffers[BrushDefinition.BrushBufferName.BRUSH_INFO]) # FIXME Perhaps not each time ...
 
-func reset_shaders(sz : Vector2i) -> bool:
+func reset_shaders(_sz : Vector2i) -> bool:
 	return false
 
 func diagnosis() -> void:
-	var structural_info := rendering_device.buffer_get_data(canvas_info_buffer.rid)
+	var structural_info : PackedByteArray = rendering_device.buffer_get_data(canvas_info_buffer.rid)
 	print("Size : %d" % (structural_info.size()))
-	var width := structural_info.decode_u32(0)
-	var height := structural_info.decode_u32(4)
+	var width : int = structural_info.decode_u32(0)
+	var height : int = structural_info.decode_u32(4)
 	print("Read canvas size = %dx%d" % [width, height])
 	print("Brushes :")
-	for b in brushes:
+	for b : String in brushes:
 		print("\t%s" % (b))
-		for i in range(brushes[b].stages.size()):
+		for i : int in range(brushes[b].stages.size()):
 			var s : BrushShader = brushes[b].stages[i]
 			print("\t\tStage #%d" % (i))
 			#print("\t\t%s" % (s.shader))
-			for io in range(s.ios.size()):
+			for io : int in range(s.ios.size()):
 				print("\t\t\t#%d : %s" % [io, s.ios[io]])
 	print("---")
 
@@ -345,14 +326,14 @@ func _run_shader() -> void:
 	if active_brush != null:
 		_update_buffer(rendering_device, cursor_info_buffer)
 	if active_brush != null:
-		for s in active_brush.stages:
-			var list := rendering_device.compute_list_begin()
+		for s : BrushShader in active_brush.stages:
+			var list : int = rendering_device.compute_list_begin()
 			rendering_device.compute_list_bind_compute_pipeline(list, s.pipeline)
 			rendering_device.compute_list_bind_uniform_set(list, s.uniform_set, 0)
 			@warning_ignore("integer_division")
 			rendering_device.compute_list_dispatch(list, (canvas_size.x / 16) + 1, (canvas_size.y / 16) + 1, 1)
 			rendering_device.compute_list_end()
-	var render_list := rendering_device.compute_list_begin()
+	var render_list : int = rendering_device.compute_list_begin()
 	assert(render_pipeline != null and render_pipeline.is_valid())
 	rendering_device.compute_list_bind_compute_pipeline(render_list, render_pipeline)
 	assert(render_uniform_set != null and render_uniform_set.is_valid())
@@ -366,39 +347,41 @@ func _update_buffer(rd : RenderingDevice, buffer : ShaderBuffer) -> void:
 		rd.buffer_update(buffer.rid, 0, buffer.cache.size(), buffer.cache)
 
 func _fill_buffer(rd : RenderingDevice, buffer : ShaderBuffer, value : float, build_cache : bool = false) -> void:
-	var values := PackedFloat32Array()
+	var values : PackedFloat32Array = PackedFloat32Array()
+	@warning_ignore("integer_division")
 	values.resize(buffer.size / 4)
 	values.fill(value)
-	var byte_buffer := values.to_byte_array()
+	var byte_buffer : PackedByteArray = values.to_byte_array()
 	if build_cache:
 		buffer.set_cache(byte_buffer)
 	rd.buffer_update(buffer.rid, 0, byte_buffer.size(), byte_buffer)
 
 func _fill_buffer_v(rd : RenderingDevice, buffer : ShaderBuffer, values : Array[float], build_cache : bool = false) -> void:
 	assert(values != null and not values.is_empty())
-	var array_size := values.size()
-	var float_buffer := PackedFloat32Array()
-	var count := buffer.size / 4
+	var array_size : int = values.size()
+	var float_buffer : PackedFloat32Array = PackedFloat32Array()
+	@warning_ignore("integer_division")
+	var count : int = buffer.size / 4
 	float_buffer.resize(count)
-	var i := 0
+	var i : int = 0
 	while (i + array_size) <= count:
-		for j in range(array_size):
+		for j : int in range(array_size):
 			float_buffer[i] = values[j]
 			i = i + 1
-	var byte_buffer := float_buffer.to_byte_array()
+	var byte_buffer : PackedByteArray = float_buffer.to_byte_array()
 	if build_cache:
 		buffer.set_cache(byte_buffer)
 	rd.buffer_update(buffer.rid, 0, byte_buffer.size(), byte_buffer)
 
 func _register_uniform_in_set(buffer : ShaderBuffer, binding : int, uniform_list : Array[RDUniform]) -> void:
-	var uniform := RDUniform.new()
+	var uniform : RDUniform = RDUniform.new()
 	uniform.uniform_type = buffer.type
 	uniform.binding = binding
 	uniform.add_id(buffer.rid)
 	uniform_list.append(uniform)
 
 func _create_hires_image_buffer(rd : RenderingDevice, sz : Vector2i) -> ShaderBuffer:
-	var format = RDTextureFormat.new()
+	var format : RDTextureFormat = RDTextureFormat.new()
 	format.width = sz.x
 	format.height = sz.y
 	format.depth = 1
@@ -407,11 +390,11 @@ func _create_hires_image_buffer(rd : RenderingDevice, sz : Vector2i) -> ShaderBu
 	format.array_layers = 1
 	format.mipmaps = 1
 	format.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT + RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT + RenderingDevice.TEXTURE_USAGE_STORAGE_BIT + RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT + RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT
-	var init_data := PackedFloat32Array()
+	var init_data : PackedFloat32Array = PackedFloat32Array()
 	init_data.resize(sz.x * sz.y * 4)
 	init_data.fill(0.0)
-	for i in range(sz.x * sz.y):
-		var idx := i * 4
+	for i : int in range(sz.x * sz.y):
+		var idx : int = i * 4
 		init_data[idx + 0] = 1.0
 		init_data[idx + 3] = 1.0
 	return ShaderBuffer.new(rd.texture_create(format, RDTextureView.new(), [ init_data.to_byte_array() ]), RenderingDevice.UNIFORM_TYPE_IMAGE, sz.x * sz.y * 16)
@@ -423,7 +406,7 @@ func _create_uniform_buffer(rd : RenderingDevice, parameters_count : int, bytes 
 
 func _create_canvas_buffer(rd : RenderingDevice, parameters_count : int, bytes : PackedByteArray = PackedByteArray()) -> ShaderBuffer:
 	var rounded_size : int = ceil(parameters_count / 4.0) * 16 # 4 * 32bit components
-	var total_size := canvas_size.x * canvas_size.y * rounded_size
+	var total_size : int = canvas_size.x * canvas_size.y * rounded_size
 	_set_clearing_buffer_size(total_size)
 	return ShaderBuffer.new(rd.storage_buffer_create(total_size, bytes), RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER, total_size)
 

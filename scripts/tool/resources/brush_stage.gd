@@ -5,4 +5,4 @@ extends Resource
 
 @export var shader : String
 
-@export var buffers : Array[BrushTool.BrushBufferName]
+@export var buffers : Array[BrushDefinition.BrushBufferName]

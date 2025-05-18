@@ -21,10 +21,10 @@ signal value_changed(f : float)
 
 func _ready() -> void:
 	slider.value_changed.connect(slider_value_changed)
-	slider.drag_started.connect(func(): is_dragging = true)
-	slider.drag_ended.connect(func(_v) : is_dragging = false)
+	slider.drag_started.connect(func() -> void : is_dragging = true)
+	slider.drag_ended.connect(func(_v : bool) -> void : is_dragging = false)
 	edit.text_submitted.connect(submit_text)
-	edit.focus_exited.connect(func() : submit_text(edit.text))
+	edit.focus_exited.connect(func() -> void : submit_text(edit.text))
 	slider_set_min(min_value)
 	slider_set_max(max_value)
 	submit_value(value)

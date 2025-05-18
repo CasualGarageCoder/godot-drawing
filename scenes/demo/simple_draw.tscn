@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://lwjb2q84t2lf"]
+[gd_scene load_steps=30 format=3 uid="uid://lwjb2q84t2lf"]
 
 [ext_resource type="Script" uid="uid://dy2hkmcke47ij" path="res://scripts/tool/simple_pencil.gd" id="1_h41xy"]
 [ext_resource type="Script" uid="uid://dyjprub2p33i2" path="res://scripts/demo/simple_draw.gd" id="1_upbys"]
@@ -6,10 +6,11 @@
 [ext_resource type="Texture2D" uid="uid://crvxf2qsm7t3d" path="res://resources/icons/line_tool_hand.png" id="3_i4wgg"]
 [ext_resource type="Script" uid="uid://br7ctw707y15w" path="res://scripts/tool/resources/brush_stage.gd" id="4_h2aqj"]
 [ext_resource type="Script" uid="uid://cjxis4u4q8ghd" path="res://scripts/tool/resources/brush_parameter.gd" id="4_pwkjd"]
+[ext_resource type="Script" uid="uid://bh8jjihib1pg4" path="res://scripts/tool/resources/brush_definition.gd" id="6_7x8bv"]
 [ext_resource type="Texture2D" uid="uid://dkj7gr6onh50f" path="res://resources/icons/pencil_tool_hand.png" id="6_pwkjd"]
 [ext_resource type="Texture2D" uid="uid://dbysqjehgq6nv" path="res://resources/icons/eraser_tool_hand.png" id="7_5tb0q"]
 
-[sub_resource type="Resource" id="Resource_5tb0q"]
+[sub_resource type="Resource" id="Resource_vwfox"]
 script = ExtResource("4_pwkjd")
 name = "Size"
 min_value = 0.0
@@ -17,7 +18,7 @@ max_value = 24.0
 default_value = 8.0
 metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
 
-[sub_resource type="Resource" id="Resource_7x8bv"]
+[sub_resource type="Resource" id="Resource_00ckr"]
 script = ExtResource("4_pwkjd")
 name = "Sharpness"
 min_value = 1.0
@@ -25,29 +26,79 @@ max_value = 16.0
 default_value = 1.0
 metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
 
-[sub_resource type="Resource" id="Resource_h2aqj"]
+[sub_resource type="Resource" id="Resource_kh0sa"]
 script = ExtResource("4_h2aqj")
 name = "LineDraw"
 shader = "res://resources/shaders/compute/line_brush.glsl"
 buffers = Array[int]([5, 3, 2])
 metadata/_custom_type_script = "uid://br7ctw707y15w"
 
-[sub_resource type="Resource" id="Resource_pwkjd"]
+[sub_resource type="Resource" id="Resource_uydrv"]
 script = ExtResource("4_h2aqj")
 name = "Mixer"
 shader = "res://resources/shaders/compute/mixing_distance.glsl"
 buffers = Array[int]([0, 1, 5, 3, 4])
 metadata/_custom_type_script = "uid://br7ctw707y15w"
 
-[sub_resource type="Resource" id="Resource_i4wgg"]
-script = ExtResource("2_lyset")
-name = "fast"
-icon = ExtResource("3_i4wgg")
-parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_5tb0q"), SubResource("Resource_7x8bv")])
+[sub_resource type="Resource" id="Resource_wjv3a"]
+script = ExtResource("6_7x8bv")
+identifier = "LineBrush"
 buffers = Dictionary[int, int]({
 5: 1
 })
-stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_h2aqj"), SubResource("Resource_pwkjd")])
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_kh0sa"), SubResource("Resource_uydrv")])
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_vwfox"), SubResource("Resource_00ckr")])
+metadata/_custom_type_script = "uid://bh8jjihib1pg4"
+
+[sub_resource type="Resource" id="Resource_i4wgg"]
+script = ExtResource("2_lyset")
+definition = SubResource("Resource_wjv3a")
+icon = ExtResource("3_i4wgg")
+metadata/_custom_type_script = "uid://buusv1d5mc67w"
+
+[sub_resource type="Resource" id="Resource_7x8bv"]
+script = ExtResource("4_pwkjd")
+name = "SizeMin"
+min_value = 0.0
+max_value = 8.0
+default_value = 0.5
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_0gavr"]
+script = ExtResource("4_pwkjd")
+name = "SizeMax"
+min_value = 0.0
+max_value = 16.0
+default_value = 8.0
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_v5ei6"]
+script = ExtResource("4_pwkjd")
+name = "Opacity"
+min_value = 0.0
+max_value = 1.0
+default_value = 0.8
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_6qg25"]
+script = ExtResource("4_h2aqj")
+name = "hard_brush"
+shader = "res://resources/shaders/compute/hard_brush.glsl"
+buffers = Array[int]([3, 4, 2, 1])
+metadata/_custom_type_script = "uid://br7ctw707y15w"
+
+[sub_resource type="Resource" id="Resource_rlvoc"]
+script = ExtResource("6_7x8bv")
+identifier = "Pencil"
+buffers = Dictionary[int, int]({})
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_6qg25")])
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_7x8bv"), SubResource("Resource_0gavr"), SubResource("Resource_v5ei6")])
+metadata/_custom_type_script = "uid://bh8jjihib1pg4"
+
+[sub_resource type="Resource" id="Resource_g8oel"]
+script = ExtResource("2_lyset")
+definition = SubResource("Resource_rlvoc")
+icon = ExtResource("6_pwkjd")
 metadata/_custom_type_script = "uid://buusv1d5mc67w"
 
 [sub_resource type="Resource" id="Resource_46m6h"]
@@ -62,51 +113,11 @@ metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
 script = ExtResource("4_pwkjd")
 name = "SizeMax"
 min_value = 0.0
-max_value = 16.0
-default_value = 8.0
-metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
-
-[sub_resource type="Resource" id="Resource_y03ll"]
-script = ExtResource("4_pwkjd")
-name = "Opacity"
-min_value = 0.0
-max_value = 1.0
-default_value = 0.8
-metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
-
-[sub_resource type="Resource" id="Resource_uww0g"]
-script = ExtResource("4_h2aqj")
-name = "hard_brush"
-shader = "res://resources/shaders/compute/hard_brush.glsl"
-buffers = Array[int]([3, 4, 2, 1])
-metadata/_custom_type_script = "uid://br7ctw707y15w"
-
-[sub_resource type="Resource" id="Resource_g8oel"]
-script = ExtResource("2_lyset")
-name = "Pencil"
-icon = ExtResource("6_pwkjd")
-parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_46m6h"), SubResource("Resource_0em3l"), SubResource("Resource_y03ll")])
-buffers = Dictionary[int, int]({})
-stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_uww0g")])
-metadata/_custom_type_script = "uid://buusv1d5mc67w"
-
-[sub_resource type="Resource" id="Resource_rfxuh"]
-script = ExtResource("4_pwkjd")
-name = "SizeMin"
-min_value = 0.0
-max_value = 8.0
-default_value = 0.5
-metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
-
-[sub_resource type="Resource" id="Resource_0gavr"]
-script = ExtResource("4_pwkjd")
-name = "SizeMax"
-min_value = 0.0
 max_value = 32.0
 default_value = 20.0
 metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
 
-[sub_resource type="Resource" id="Resource_v5ei6"]
+[sub_resource type="Resource" id="Resource_uww0g"]
 script = ExtResource("4_pwkjd")
 name = "Opacity"
 min_value = 0.0
@@ -114,20 +125,25 @@ max_value = 1.0
 default_value = 0.5
 metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
 
-[sub_resource type="Resource" id="Resource_6qg25"]
+[sub_resource type="Resource" id="Resource_y03ll"]
 script = ExtResource("4_h2aqj")
 name = "eraser"
 shader = "res://resources/shaders/compute/eraser_tool.glsl"
 buffers = Array[int]([3, 4, 2, 1])
 metadata/_custom_type_script = "uid://br7ctw707y15w"
 
+[sub_resource type="Resource" id="Resource_rfxuh"]
+script = ExtResource("6_7x8bv")
+identifier = "Eraser"
+buffers = Dictionary[int, int]({})
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_y03ll")])
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_46m6h"), SubResource("Resource_0em3l"), SubResource("Resource_uww0g")])
+metadata/_custom_type_script = "uid://bh8jjihib1pg4"
+
 [sub_resource type="Resource" id="Resource_wyf6c"]
 script = ExtResource("2_lyset")
-name = "Eraser"
+definition = SubResource("Resource_rfxuh")
 icon = ExtResource("7_5tb0q")
-parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_rfxuh"), SubResource("Resource_0gavr"), SubResource("Resource_v5ei6")])
-buffers = Dictionary[int, int]({})
-stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_6qg25")])
 metadata/_custom_type_script = "uid://buusv1d5mc67w"
 
 [sub_resource type="Curve" id="Curve_pwkjd"]
