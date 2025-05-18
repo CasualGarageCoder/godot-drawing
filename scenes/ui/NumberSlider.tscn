@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnhdykpmub3fm"]
+
+[ext_resource type="Script" uid="uid://b3iobqt26aevb" path="res://scripts/ui/NumberSlider.gd" id="1_i2ba7"]
+[ext_resource type="Theme" uid="uid://b8edcqi3o3apx" path="res://resources/themes/debug_gui.tres" id="1_urui4"]
+
+[node name="NumberSlider" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+theme = ExtResource("1_urui4")
+theme_override_constants/separation = 0
+script = ExtResource("1_i2ba7")
+
+[node name="Edit" type="LineEdit" parent="."]
+layout_mode = 2
+
+[node name="Slider" type="HSlider" parent="."]
+layout_mode = 2

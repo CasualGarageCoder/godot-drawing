@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://df1f2d3cqb7ie"
+path="res://.godot/imported/line_brush.glsl-39ba06a193c4945ee26d9f03a86fcd37.res"
+
+[deps]
+
+source_file="res://resources/shaders/compute/line_brush.glsl"
+dest_files=["res://.godot/imported/line_brush.glsl-39ba06a193c4945ee26d9f03a86fcd37.res"]
+
+[params]
+

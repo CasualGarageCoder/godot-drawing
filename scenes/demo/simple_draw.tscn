@@ -1,0 +1,189 @@
+[gd_scene load_steps=26 format=3 uid="uid://lwjb2q84t2lf"]
+
+[ext_resource type="Script" uid="uid://dy2hkmcke47ij" path="res://scripts/tool/simple_pencil.gd" id="1_h41xy"]
+[ext_resource type="Script" uid="uid://dyjprub2p33i2" path="res://scripts/demo/simple_draw.gd" id="1_upbys"]
+[ext_resource type="Script" uid="uid://buusv1d5mc67w" path="res://scripts/tool/resources/brush_tool.gd" id="2_lyset"]
+[ext_resource type="Texture2D" uid="uid://crvxf2qsm7t3d" path="res://resources/icons/line_tool_hand.png" id="3_i4wgg"]
+[ext_resource type="Script" uid="uid://br7ctw707y15w" path="res://scripts/tool/resources/brush_stage.gd" id="4_h2aqj"]
+[ext_resource type="Script" uid="uid://cjxis4u4q8ghd" path="res://scripts/tool/resources/brush_parameter.gd" id="4_pwkjd"]
+[ext_resource type="Texture2D" uid="uid://dkj7gr6onh50f" path="res://resources/icons/pencil_tool_hand.png" id="6_pwkjd"]
+[ext_resource type="Texture2D" uid="uid://dbysqjehgq6nv" path="res://resources/icons/eraser_tool_hand.png" id="7_5tb0q"]
+
+[sub_resource type="Resource" id="Resource_5tb0q"]
+script = ExtResource("4_pwkjd")
+name = "Size"
+min_value = 0.0
+max_value = 24.0
+default_value = 8.0
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_7x8bv"]
+script = ExtResource("4_pwkjd")
+name = "Sharpness"
+min_value = 1.0
+max_value = 16.0
+default_value = 1.0
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_h2aqj"]
+script = ExtResource("4_h2aqj")
+name = "LineDraw"
+shader = "res://resources/shaders/compute/line_brush.glsl"
+buffers = Array[int]([5, 3, 2])
+metadata/_custom_type_script = "uid://br7ctw707y15w"
+
+[sub_resource type="Resource" id="Resource_pwkjd"]
+script = ExtResource("4_h2aqj")
+name = "Mixer"
+shader = "res://resources/shaders/compute/mixing_distance.glsl"
+buffers = Array[int]([0, 1, 5, 3, 4])
+metadata/_custom_type_script = "uid://br7ctw707y15w"
+
+[sub_resource type="Resource" id="Resource_i4wgg"]
+script = ExtResource("2_lyset")
+name = "fast"
+icon = ExtResource("3_i4wgg")
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_5tb0q"), SubResource("Resource_7x8bv")])
+buffers = Dictionary[int, int]({
+5: 1
+})
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_h2aqj"), SubResource("Resource_pwkjd")])
+metadata/_custom_type_script = "uid://buusv1d5mc67w"
+
+[sub_resource type="Resource" id="Resource_46m6h"]
+script = ExtResource("4_pwkjd")
+name = "SizeMin"
+min_value = 0.0
+max_value = 8.0
+default_value = 0.5
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_0em3l"]
+script = ExtResource("4_pwkjd")
+name = "SizeMax"
+min_value = 0.0
+max_value = 16.0
+default_value = 8.0
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_y03ll"]
+script = ExtResource("4_pwkjd")
+name = "Opacity"
+min_value = 0.0
+max_value = 1.0
+default_value = 0.8
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_uww0g"]
+script = ExtResource("4_h2aqj")
+name = "hard_brush"
+shader = "res://resources/shaders/compute/hard_brush.glsl"
+buffers = Array[int]([3, 4, 2, 1])
+metadata/_custom_type_script = "uid://br7ctw707y15w"
+
+[sub_resource type="Resource" id="Resource_g8oel"]
+script = ExtResource("2_lyset")
+name = "Pencil"
+icon = ExtResource("6_pwkjd")
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_46m6h"), SubResource("Resource_0em3l"), SubResource("Resource_y03ll")])
+buffers = Dictionary[int, int]({})
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_uww0g")])
+metadata/_custom_type_script = "uid://buusv1d5mc67w"
+
+[sub_resource type="Resource" id="Resource_rfxuh"]
+script = ExtResource("4_pwkjd")
+name = "SizeMin"
+min_value = 0.0
+max_value = 8.0
+default_value = 0.5
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_0gavr"]
+script = ExtResource("4_pwkjd")
+name = "SizeMax"
+min_value = 0.0
+max_value = 32.0
+default_value = 20.0
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_v5ei6"]
+script = ExtResource("4_pwkjd")
+name = "Opacity"
+min_value = 0.0
+max_value = 1.0
+default_value = 0.5
+metadata/_custom_type_script = "uid://cjxis4u4q8ghd"
+
+[sub_resource type="Resource" id="Resource_6qg25"]
+script = ExtResource("4_h2aqj")
+name = "eraser"
+shader = "res://resources/shaders/compute/eraser_tool.glsl"
+buffers = Array[int]([3, 4, 2, 1])
+metadata/_custom_type_script = "uid://br7ctw707y15w"
+
+[sub_resource type="Resource" id="Resource_wyf6c"]
+script = ExtResource("2_lyset")
+name = "Eraser"
+icon = ExtResource("7_5tb0q")
+parameters = Array[ExtResource("4_pwkjd")]([SubResource("Resource_rfxuh"), SubResource("Resource_0gavr"), SubResource("Resource_v5ei6")])
+buffers = Dictionary[int, int]({})
+stages = Array[ExtResource("4_h2aqj")]([SubResource("Resource_6qg25")])
+metadata/_custom_type_script = "uid://buusv1d5mc67w"
+
+[sub_resource type="Curve" id="Curve_pwkjd"]
+_data = [Vector2(0.254545, 0.069025), 0.0, 0.0, 0, 0, Vector2(0.681818, 0.394305), 2.13418, 2.13418, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_basxk"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_upbys")
+brushes = Array[ExtResource("2_lyset")]([SubResource("Resource_i4wgg"), SubResource("Resource_g8oel"), SubResource("Resource_wyf6c")])
+pressure_adjustment = SubResource("Curve_pwkjd")
+
+[node name="DrawApp" type="Node" parent="."]
+script = ExtResource("1_h41xy")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RenderArea" type="TextureRect" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+texture = SubResource("Texture2DRD_basxk")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="ForegroundColorPicker" type="ColorPickerButton" parent="HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+
+[node name="BackgroundColorPicker" type="ColorPickerButton" parent="HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+
+[node name="ToolsContainer" type="GridContainer" parent="HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 2
+
+[node name="ParametersContainer" type="MarginContainer" parent="HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3

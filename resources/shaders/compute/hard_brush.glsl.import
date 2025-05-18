@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://c70bej55ercnp"
+path="res://.godot/imported/hard_brush.glsl-4a8476d5746dd8e9027dd3df6009a317.res"
+
+[deps]
+
+source_file="res://resources/shaders/compute/hard_brush.glsl"
+dest_files=["res://.godot/imported/hard_brush.glsl-4a8476d5746dd8e9027dd3df6009a317.res"]
+
+[params]
+

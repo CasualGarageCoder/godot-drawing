@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b12hugqeva8i2"
+path="res://.godot/imported/mixing_distance.glsl-4db6486ea58e4346fcbc29a6570795d6.res"
+
+[deps]
+
+source_file="res://resources/shaders/compute/mixing_distance.glsl"
+dest_files=["res://.godot/imported/mixing_distance.glsl-4db6486ea58e4346fcbc29a6570795d6.res"]
+
+[params]
+
