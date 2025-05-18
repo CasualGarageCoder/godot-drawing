@@ -80,7 +80,12 @@ class BrushShader:
 	var uniform_set : RID
 	var pipeline : RID
 
-	func _init(sh : RID, uniforms : Array[BrushDefinition.BrushBufferName]) -> void:
+	var identifier : String
+	var path_to_source : String
+
+	func _init(n : String, p : String, sh : RID, uniforms : Array[BrushDefinition.BrushBufferName]) -> void:
+		identifier = n
+		path_to_source = p
 		ios = uniforms
 		shader = sh
 		uniform_set = RID()
@@ -173,7 +178,7 @@ func add_brush(def : BrushDefinition) -> void:
 			got_all = got_all and (u in buffers)
 			ios.append(u)
 		brush.ready = got_all
-		var brush_shader : BrushShader = BrushShader.new(stage_shader, ios)
+		var brush_shader : BrushShader = BrushShader.new(s.name, s.shader, stage_shader, ios)
 		if brush.ready:
 			_link_brush_shader(brush_shader)
 		brush.stages.append(brush_shader)
@@ -313,10 +318,10 @@ func diagnosis() -> void:
 		print("\t%s" % (b))
 		for i : int in range(brushes[b].stages.size()):
 			var s : BrushShader = brushes[b].stages[i]
-			print("\t\tStage #%d" % (i))
-			#print("\t\t%s" % (s.shader))
+			print("\t\tStage #%d : %s" % [i, s.identifier])
+			print("\t\t%s" % (s.path_to_source))
 			for io : int in range(s.ios.size()):
-				print("\t\t\t#%d : %s" % [io, s.ios[io]])
+				print("\t\t\t#%d : %s" % [io, BrushDefinition.BUFFER_NAMES[s.ios[io]]])
 	print("---")
 
 func render() -> void:
